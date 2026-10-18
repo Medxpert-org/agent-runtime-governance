@@ -1,0 +1,33 @@
+# agent-runtime-governance
+
+> Runtime governance specs for multi-agent AI operations: a red-line guard hook (PreToolUse, exit 0/2),
+> a domain × autonomy-level permission matrix (🟢/🟡/🔴), and a structured dispatch template
+> (trace_id, owner, depth ≤ 4, done criteria). Aligned with the LGD (Lifecycle Governance Doctrine).
+> Code is pure Python stdlib — zero third-party packages, zero network egress.
+
+## What this repo is
+
+A self-published reference of the three runtime pieces we run in daily multi-agent operations to keep
+autonomous agents inside explicit boundaries. It is norms + code, not a runnable application.
+
+## Core files
+
+- [README.md](README.md): project overview, quick start, self-test, license layering
+- [README_EN.md](README_EN.md): English overview
+- [code/redline_guard.py](code/redline_guard.py): PreToolUse red-line guard hook (Python stdlib)
+- [docs/permission_matrix_v1.md](docs/permission_matrix_v1.md): domain × autonomy-level policy
+- [docs/dispatch_template_v1.md](docs/dispatch_template_v1.md): structured handoff / dispatch template
+- [CITATION.cff](CITATION.cff): citation metadata (concept DOI 10.5281/zenodo.22821834)
+- [LICENSE](LICENSE): code license (Apache-2.0 for `code/`)
+
+## Red-line classes the hook blocks
+
+- R1 — destructive delete aimed at protected targets (recursive delete AND danger target co-occur)
+- R2 — plaintext secrets in commands or files (matched values are never echoed)
+- R3 — system-level damage (format / partition / wipe / registry-HKLM / shadow-delete patterns)
+- R4 — pipe-to-shell remote execution (fetch-a-script-and-run-it patterns)
+
+## Links
+
+- Project pointer: https://medxpert.cn
+- Repo: https://github.com/Medxpert-org/agent-runtime-governance

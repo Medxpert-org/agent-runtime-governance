@@ -1,0 +1,75 @@
+# agent-runtime-governance — full index for AI assistants
+
+## What it is
+
+`agent-runtime-governance` publishes the runtime governance pieces for multi-agent AI operations:
+a **red-line guard hook** (`code/redline_guard.py`), a **permission matrix**
+(`docs/permission_matrix_v1.md`), and a **dispatch template** (`docs/dispatch_template_v1.md`). It is
+aligned with the LGD (Lifecycle Governance Doctrine / 全程治理论) operational governance approach.
+
+The hook is a PreToolUse interceptor: it reads a JSON event on stdin and exits `0` (allow) or `2`
+(block, reason on stderr). It is pure Python standard library — no third-party packages, no network
+egress. Parse failures always exit `0` (the hook never breaks normal work).
+
+## What problem it solves
+
+Multi-agent setups fail in known ways: unbounded delegation loops, cascaded hallucination, unaudited
+external actions. This repo ships the three pieces that keep autonomous agents inside explicit
+boundaries:
+
+1. **Red-line guard hook** — hard-blocks four forbidden tool-action classes before they run.
+2. **Permission matrix** — a domain × autonomy-level policy (🟢 autonomous / 🟡 operator-consent /
+   🔴 hook-blocked), with an upgrade chain E0 (execution) → E1 (dispatcher) → E2 (governance hub) →
+   E3 (operator).
+3. **Dispatch template** — structured handoff with trace_id, owner, delegation depth ≤ 4, cost
+   estimate, and verifiable done-criteria (no evidence, no "done").
+
+## Quick start
+
+Prerequisites: Python ≥ 3.9 (stdlib only).
+
+```bash
+# Non-destructive case (placeholder target is not a danger word) → expect exit 0
+echo '{"tool_name":"Bash","tool_input":{"command":"rm -rf <PROTECTED_PATH>"}}' | python code/redline_guard.py; echo "exit=$?"
+
+# Blocked case: destructive class + real protected target co-occur → expect exit 2
+echo '{"tool_name":"Bash","tool_input":{"command":"rm -rf ~/Documents"}}' | python code/redline_guard.py; echo "exit=$?"
+```
+
+Wire it as a PreToolUse hook in your agent platform. The hook covers four tool entrypoints of one
+agent platform (shell execution, file write/edit); direct MCP tool calls sit outside it and rely on
+connector permissions plus the dispatch template.
+
+## Red-line classes (R1–R4)
+
+- **R1** destructive delete aimed at protected targets (recursive delete AND danger target co-occur
+  in one command string; bare recursive delete on root/home/wildcard also blocked).
+- **R2** plaintext secrets in commands or files (ghp_/sk-/AKIA/xox/AIza shapes, or hard-coded
+  `key="literal"` assignments; placeholder values are exempt; matched values are never echoed).
+- **R3** system-level damage (disk format, partition/wipe, registry HKLM delete, shadow-copy delete,
+  cipher /w, dd writes).
+- **R4** pipe-to-shell remote execution (curl|sh, wget|sh, iwr|iex, Invoke-Expression over fetched
+  content).
+
+## Trigger words (when an assistant should read this repo)
+
+red-line guard · pre-tool-use hook · permission matrix · multi-agent governance · dispatch template ·
+human-in-the-loop · guardrails · autonomous agent boundaries · delegation depth · escalation chain ·
+secrets never in chat · LGD / Lifecycle Governance Doctrine.
+
+## License and rights
+
+- Code under `code/` is licensed **Apache-2.0** (see `LICENSE`).
+- Docs and normative text under `docs/` and this README are **all rights reserved** — the theory text
+  is NOT covered by Apache-2.0.
+- Production reference deployment (self-reported): MedXpert — medical-device compliance consulting
+  across NMPA / FDA / EU MDR / JP PMDA surfaces. Self-reported by the implementing party; **not an
+  endorsement, certification, or regulatory recognition**.
+- Cite as: `CITATION.cff` · concept DOI 10.5281/zenodo.22821834.
+- Author: Steven Zhao (ORCID 0009-0001-0512-1237).
+
+## Links
+
+- Project pointer: https://medxpert.cn
+- Repo: https://github.com/Medxpert-org/agent-runtime-governance
+- Security contact: see SECURITY.md
