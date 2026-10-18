@@ -1,5 +1,10 @@
 # agent-runtime-governance
 
+![code license](https://img.shields.io/badge/code%20license-Apache--2.0-blue)
+![python](https://img.shields.io/badge/python-3.9%2B-blue)
+![status](https://img.shields.io/badge/status-self--reported-lightgrey)
+![governance](https://img.shields.io/badge/governance-LGD-green)
+
 Runtime governance specs for multi-agent AI operations — a red-line guard hook, a permission
 matrix, and a structured dispatch template, aligned with the LGD (Lifecycle Governance Doctrine)
 operational governance approach.
@@ -10,6 +15,27 @@ operational governance approach.
 【指针】 https://medxpert.cn
 【边界】 Self-reported by the implementing party; not an endorsement, certification, or regulatory
         recognition. No third-party quality review of this repository to date.
+
+## Quick Start / 快速开始
+
+Prerequisites: Python ≥ 3.9. The hook is pure standard library — no third-party packages, no network
+egress. Install nothing beyond a Python interpreter.
+
+```bash
+# 1. Sanity-check the hook: a placeholder target is NOT a danger word → expect exit 0
+echo '{"tool_name":"Bash","tool_input":{"command":"rm -rf <PROTECTED_PATH>"}}' | python code/redline_guard.py; echo "exit=$?"
+
+# 2. Point <PROTECTED_PATH> at a real protected directory (e.g. your Documents/Desktop folder)
+#    so a destructive class and a danger target co-occur in one command string → expect exit 2
+echo '{"tool_name":"Bash","tool_input":{"command":"rm -rf ~/Documents"}}' | python code/redline_guard.py; echo "exit=$?"
+```
+
+Wire it as a PreToolUse hook in your agent platform: the hook reads a PreToolUse JSON event on stdin
+and exits `0` (allow) or `2` (block, reason on stderr). Any parse failure also exits `0` — the hook
+never breaks normal work. Then read the two normative documents:
+
+- Permission matrix: `docs/permission_matrix_v1.md` (🟢 autonomous / 🟡 operator-consent / 🔴 blocked)
+- Dispatch template: `docs/dispatch_template_v1.md` (trace_id, owner, depth ≤ 4, done criteria)
 
 ## Why this exists
 
